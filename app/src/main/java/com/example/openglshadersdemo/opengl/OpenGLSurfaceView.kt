@@ -247,7 +247,7 @@ class Square {
             GLES20.glEnableVertexAttribArray(it)
             GLES20.glVertexAttribPointer(
                 it,
-                Triangle.COORDS_PER_VERTEX,
+                COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT,
                 false,
                 vertexStride,
