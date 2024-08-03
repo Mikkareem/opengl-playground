@@ -13,11 +13,11 @@ class Cube {
 
     private var positionHandle = 0
     private var colorHandle = 0
-    private val vbo = IntArray(3)
+    private val vbo = IntArray(2)
     private val vao = IntArray(1)
 
     private val coordinates = floatArrayOf(
-        // Front
+        // Front (3 Vertices + 3 Color)
         -1f, 1f, -1f, 1f, 0f, 0f,// 0
         -1f, -1f, -1f, 1f, 0f, 0f,// 1
         1f, -1f, -1f, 1f, 0f, 0f,// 2
@@ -91,24 +91,31 @@ class Cube {
     }
 
     private val vertexShaderCode = """
-        attribute vec3 vPosition;
-        attribute vec3 vColor;
+        #version 300 es
+        layout(location = 0) in vec3 vPosition;
+        layout(location = 1) in vec3 vColor;
+        
         uniform mat4 mvp;
-        varying vec3 color;
+        out vec3 color;
+        out vec3 pos;
         
         void main() {
             gl_Position = mvp * vec4(vPosition, 1.0);
             color = vColor;
+            pos = vPosition;
         }
     """.trimIndent()
 
     private val fragmentShaderCode = """
+        #version 300 es
         precision mediump float;
-        varying vec3 color;
+        
+        in vec3 color;
+        in vec3 pos;
+        out vec4 FragColor;
         
         void main() {
-            gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
-            gl_FragColor = vec4(color, 1.0);
+            FragColor = vec4(color, 1.0);
         }
     """.trimIndent()
 
@@ -133,8 +140,10 @@ class Cube {
             }
         }
 
-        positionHandle = GLES30.glGetAttribLocation(program, "vPosition")
-        colorHandle = GLES30.glGetAttribLocation(program, "vColor")
+//        positionHandle = GLES30.glGetAttribLocation(program, "vPosition")
+//        colorHandle = GLES30.glGetAttribLocation(program, "vColor")
+        positionHandle = 0
+        colorHandle = 1
 
         GLES30.glGenBuffers(2, vbo, 0)
         GLES30.glGenVertexArrays(1, vao, 0)
@@ -173,7 +182,7 @@ class Cube {
             GLES30.GL_FLOAT,
             false,
             COORDS_PER_VERTEX * 2 * 4,
-            3
+            COORDS_PER_VERTEX * 4
         )
     }
 
@@ -208,9 +217,6 @@ class Cube {
             GLES30.glUniformMatrix4fv(it, 1, false, result, 0)
         }
 
-        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, vbo[0])
-        GLES30.glDrawElements(GLES30.GL_TRIANGLES, indices.size, GLES30.GL_UNSIGNED_SHORT, 0)
-        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, vbo[1])
         GLES30.glDrawElements(GLES30.GL_TRIANGLES, indices.size, GLES30.GL_UNSIGNED_SHORT, 0)
     }
 }

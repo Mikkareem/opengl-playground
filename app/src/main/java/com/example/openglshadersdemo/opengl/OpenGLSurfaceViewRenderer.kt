@@ -15,7 +15,7 @@ class OpenGLSurfaceViewRenderer : Renderer {
     var z: Float = 0f
 
     @Volatile
-    var angle: Float = 45f
+    var angle: Float = 0f
 
     private val vPMatrix = FloatArray(16)
     private val projectionMatrix = FloatArray(16)
@@ -24,17 +24,19 @@ class OpenGLSurfaceViewRenderer : Renderer {
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         GLES30.glClearColor(0.4334f, 0f, 0f, 1f)
+        GLES30.glEnable(GLES30.GL_DEPTH_TEST)
         cube = Cube()
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         GLES30.glViewport(0, 0, width, height)
         val aspect = width.toFloat() / height.toFloat()
-        Matrix.frustumM(projectionMatrix, 0, -aspect, aspect, -1f, 1f, 3f, 200f)
+        Matrix.frustumM(projectionMatrix, 0, -1f, 1f, -1f, 1f, 3f, 200f)
     }
 
     override fun onDrawFrame(gl: GL10?) {
-        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT or GLES30.GL_DEPTH_BUFFER_BIT)
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT)
+        GLES30.glClear(GLES30.GL_DEPTH_BUFFER_BIT)
 
         // Set the camera position (View matrix)
         Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, -8f, 0f, 0f, 0f, 0f, 1f, 0f)
