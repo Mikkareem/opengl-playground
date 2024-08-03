@@ -12,46 +12,48 @@ class Cube {
     }
 
     private var positionHandle = 0
-    private val vbo = IntArray(2)
+    private var colorHandle = 0
+    private val vbo = IntArray(3)
     private val vao = IntArray(1)
 
     private val coordinates = floatArrayOf(
         // Front
-        -1f, 1f, -1f,   // 0
-        -1f, -1f, -1f,   // 1
-        1f, -1f, -1f,   // 2
-        1f, 1f, -1f,   // 3
+        -1f, 1f, -1f, 1f, 0f, 0f,// 0
+        -1f, -1f, -1f, 1f, 0f, 0f,// 1
+        1f, -1f, -1f, 1f, 0f, 0f,// 2
+        1f, 1f, -1f, 1f, 0f, 0f,// 3
 
         // Back
-        -1f, 1f, 1f,   // 4
-        -1f, -1f, 1f,   // 5
-        1f, -1f, 1f,   // 6
-        1f, 1f, 1f,   // 7
+        -1f, 1f, 1f, 1f, 1f, 0f,// 4
+        -1f, -1f, 1f, 1f, 1f, 0f,// 5
+        1f, -1f, 1f, 1f, 1f, 0f,// 6
+        1f, 1f, 1f, 1f, 1f, 0f,// 7
 
         // Top
-        -1f, -1f, 1f,   // 8
-        -1f, -1f, -1f,   // 9
-        1f, -1f, -1f,   // 10
-        1f, -1f, 1f,   // 11
+        -1f, -1f, 1f, 0f, 1f, 0f,// 8
+        -1f, -1f, -1f, 0f, 1f, 0f,// 9
+        1f, -1f, -1f, 0f, 1f, 0f,// 10
+        1f, -1f, 1f, 0f, 1f, 0f,// 11
 
         // Bottom
-        -1f, 1f, 1f,   // 12
-        -1f, 1f, -1f,   // 13
-        1f, 1f, -1f,   // 14
-        1f, 1f, 1f,   // 15
+        -1f, 1f, 1f, 0f, 1f, 1f,// 12
+        -1f, 1f, -1f, 0f, 1f, 1f,// 13
+        1f, 1f, -1f, 0f, 1f, 1f,// 14
+        1f, 1f, 1f, 0f, 1f, 1f,// 15
 
         // Left
-        -1f, -1f, 1f,   // 16
-        -1f, -1f, -1f,   // 17
-        -1f, 1f, -1f,   // 18
-        -1f, 1f, 1f,   // 19
+        -1f, -1f, 1f, 0f, 0f, 1f,// 16
+        -1f, -1f, -1f, 0f, 0f, 1f,// 17
+        -1f, 1f, -1f, 0f, 0f, 1f,// 18
+        -1f, 1f, 1f, 0f, 0f, 1f,// 19
 
         // Right
-        1f, -1f, 1f,   // 20
-        1f, -1f, -1f,   // 21
-        1f, 1f, -1f,   // 22
-        1f, 1f, 1f,   // 23
+        1f, -1f, 1f, 1f, 0f, 1f,// 20
+        1f, -1f, -1f, 1f, 0f, 1f,// 21
+        1f, 1f, -1f, 1f, 0f, 1f,// 22
+        1f, 1f, 1f, 1f, 0f, 1f,// 23
     )
+
     private val indices = shortArrayOf(
         0, 1, 2,
         0, 2, 3,
@@ -90,17 +92,23 @@ class Cube {
 
     private val vertexShaderCode = """
         attribute vec3 vPosition;
+        attribute vec3 vColor;
         uniform mat4 mvp;
+        varying vec3 color;
+        
         void main() {
             gl_Position = mvp * vec4(vPosition, 1.0);
+            color = vColor;
         }
     """.trimIndent()
 
     private val fragmentShaderCode = """
         precision mediump float;
-        uniform vec4 vColor;
+        varying vec3 color;
+        
         void main() {
-            gl_FragColor = vColor;
+            gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+            gl_FragColor = vec4(color, 1.0);
         }
     """.trimIndent()
 
@@ -126,6 +134,7 @@ class Cube {
         }
 
         positionHandle = GLES30.glGetAttribLocation(program, "vPosition")
+        colorHandle = GLES30.glGetAttribLocation(program, "vColor")
 
         GLES30.glGenBuffers(2, vbo, 0)
         GLES30.glGenVertexArrays(1, vao, 0)
@@ -154,12 +163,18 @@ class Cube {
             COORDS_PER_VERTEX,
             GLES30.GL_FLOAT,
             false,
-            COORDS_PER_VERTEX * 4,
+            COORDS_PER_VERTEX * 2 * 4,
             0
         )
-
-        // Unbind VAO
-        GLES30.glBindVertexArray(0)
+        GLES30.glEnableVertexAttribArray(colorHandle)
+        GLES30.glVertexAttribPointer(
+            colorHandle,
+            COORDS_PER_VERTEX,
+            GLES30.GL_FLOAT,
+            false,
+            COORDS_PER_VERTEX * 2 * 4,
+            3
+        )
     }
 
     private fun loadShader(type: Int, shaderCode: String): Int {
@@ -183,16 +198,9 @@ class Cube {
 
         GLES30.glBindVertexArray(vao[0])
 
-        GLES30.glGetUniformLocation(program, "vColor").also {
-            GLES30.glUniform4fv(it, 1, floatArrayOf(0f, 1f, 1f, 1f), 0)
-        }
-
         GLES30.glGetUniformLocation(program, "mvp").also {
             val rotationMatrix = FloatArray(16)
             Matrix.setIdentityM(rotationMatrix, 0)
-//            Matrix.setRotateM(rotationMatrix, 0, 45f, 1f,0f,0f)
-//            Matrix.translateM(rotationMatrix, 0, 0f, 1f, 0f)
-//            Matrix.scaleM(rotationMatrix, 0, .5f, .5f, 1f)
 
             val result = FloatArray(16)
             Matrix.multiplyMM(result, 0, mvp, 0, rotationMatrix, 0)
@@ -200,6 +208,9 @@ class Cube {
             GLES30.glUniformMatrix4fv(it, 1, false, result, 0)
         }
 
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, vbo[0])
+        GLES30.glDrawElements(GLES30.GL_TRIANGLES, indices.size, GLES30.GL_UNSIGNED_SHORT, 0)
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, vbo[1])
         GLES30.glDrawElements(GLES30.GL_TRIANGLES, indices.size, GLES30.GL_UNSIGNED_SHORT, 0)
     }
 }
