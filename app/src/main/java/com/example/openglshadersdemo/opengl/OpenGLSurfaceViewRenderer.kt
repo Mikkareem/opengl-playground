@@ -1,6 +1,6 @@
 package com.example.openglshadersdemo.opengl
 
-import android.opengl.GLES20
+import android.opengl.GLES30
 import android.opengl.GLSurfaceView.Renderer
 import android.opengl.Matrix
 import android.os.SystemClock
@@ -14,17 +14,17 @@ class OpenGLSurfaceViewRenderer : Renderer {
     private val rotationMatrix = FloatArray(16)
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-        GLES20.glClearColor(0.4334f, 0f, 0f, 1f)
+        GLES30.glClearColor(0.4334f, 0f, 0f, 1f)
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
-        GLES20.glViewport(0, 0, width, height)
+        GLES30.glViewport(0, 0, width, height)
         val aspect = width.toFloat() / height.toFloat()
         Matrix.frustumM(projectionMatrix, 0, -aspect, aspect, -1f, 1f, 3f, 7f)
     }
 
     override fun onDrawFrame(gl: GL10?) {
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT)
 
         val scratch = FloatArray(16)
 

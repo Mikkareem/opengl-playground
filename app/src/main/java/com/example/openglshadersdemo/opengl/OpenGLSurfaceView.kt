@@ -7,7 +7,7 @@ class OpenGLSurfaceView(context: Context) : GLSurfaceView(context) {
     private val renderer: OpenGLSurfaceViewRenderer
 
     init {
-        setEGLContextClientVersion(2)
+        setEGLContextClientVersion(3)
         renderer = OpenGLSurfaceViewRenderer()
         setRenderer(renderer)
     }
