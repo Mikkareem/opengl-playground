@@ -10,5 +10,22 @@ class OpenGLSurfaceView(context: Context) : GLSurfaceView(context) {
         setEGLContextClientVersion(3)
         renderer = OpenGLSurfaceViewRenderer()
         setRenderer(renderer)
+
+        renderMode = RENDERMODE_WHEN_DIRTY
+    }
+
+    fun setXRotation(angle: Float) {
+        renderer.xAngle = angle
+        requestRender()
+    }
+
+    fun setYRotation(angle: Float) {
+        renderer.yAngle = angle
+        requestRender()
+    }
+
+    fun setZRotation(angle: Float) {
+        renderer.zAngle = angle
+        requestRender()
     }
 }
